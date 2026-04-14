@@ -1433,65 +1433,33 @@ function generateCaptcha() {
 
 function handleContactSubmit(e) {
   e.preventDefault();
+  const form = e.target;
   const name = document.getElementById('contactName').value.trim();
   const email = document.getElementById('contactEmail').value.trim();
   const subject = document.getElementById('contactSubject').value;
   const message = document.getElementById('contactMessage').value.trim();
-  const captchaInput = document.getElementById('captchaInput').value.trim().toUpperCase();
   
   if (!name || !email || !subject || !message) {
-    alert('Please fill in all fields.');
+    alert('Mohon lengkapi semua kolom.');
     return;
   }
   
-  // Verify CAPTCHA
-  if (captchaInput !== currentCaptchaCode) {
-    alert('The verification code you entered is incorrect. Please try again.');
-    generateCaptcha();
-    document.getElementById('captchaInput').value = '';
-    return;
-  }
+  // Submit to FormSubmit.co (handles CAPTCHA and email delivery)
+  const formData = new FormData(form);
   
-  // Prepare email data
-  const formData = {
-    name: name,
-    email: email,
-    subject: subject,
-    message: message,
-    timestamp: new Date().toISOString()
-  };
-  
-  // In production, this would send to a backend service like EmailJS, Formspree, or custom API
-  // For now, we'll simulate the submission and log it
-  console.log('Contact form submission to st.bernardv3@gmail.com:', formData);
-  
-  // Simulate sending to backend (replace with actual API call in production)
-  // Example using fetch to a backend endpoint:
-  /*
-  fetch('YOUR_BACKEND_API/contact', {
+  fetch('https://formsubmit.co/ajax/st.bernardv3@gmail.com', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: 'st.bernardv3@gmail.com',
-      ...formData
-    })
+    body: formData
   })
   .then(response => response.json())
   .then(data => {
-    alert('Thank you for your message! We will respond within 24-48 hours.');
-    e.target.reset();
-    generateCaptcha();
+    alert('Terima kasih atas pesan Anda! Kami akan merespons dalam 24-48 jam. Untuk keamanan, Anda mungkin perlu mengonfirmasi email Anda pada pengiriman pertama.');
+    form.reset();
   })
   .catch(error => {
-    alert('Sorry, there was an error sending your message. Please try again later.');
+    alert('Maaf, terjadi kesalahan saat mengirim pesan Anda. Silakan coba lagi nanti.');
     console.error('Error:', error);
   });
-  */
-  
-  // For demo purposes, show success
-  alert('Thank you for your message! We will respond within 24-48 hours.');
-  e.target.reset();
-  generateCaptcha();
 }
 
 /* ════════════════════════════════════
