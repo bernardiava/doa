@@ -1438,14 +1438,32 @@ function handleContactSubmit(e) {
   const email = document.getElementById('contactEmail').value.trim();
   const subject = document.getElementById('contactSubject').value;
   const message = document.getElementById('contactMessage').value.trim();
+  const captchaInput = document.getElementById('captchaInput').value.toUpperCase();
   
   if (!name || !email || !subject || !message) {
-    alert('Mohon lengkapi semua kolom.');
+    showNotification('Mohon lengkapi semua kolom.', 'error');
     return;
   }
   
+  // Validate CAPTCHA
+  if (captchaInput !== currentCaptchaCode) {
+    showNotification('Kode verifikasi salah. Silakan coba lagi.', 'error');
+    generateCaptcha();
+    document.getElementById('captchaInput').value = '';
+    return;
+  }
+  
+  // Show loading state
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.innerHTML;
+  submitBtn.innerHTML = '<span class="loading-spinner"></span> Mengirim...';
+  submitBtn.disabled = true;
+  
   // Submit to FormSubmit.co (handles CAPTCHA and email delivery)
   const formData = new FormData(form);
+  formData.append('_captcha', 'true');
+  formData.append('_next', window.location.href + '?status=success');
+  formData.append('_subject', 'New Contact Message: ' + subject);
   
   fetch('https://formsubmit.co/ajax/st.bernardv3@gmail.com', {
     method: 'POST',
@@ -1453,12 +1471,24 @@ function handleContactSubmit(e) {
   })
   .then(response => response.json())
   .then(data => {
-    alert('Terima kasih atas pesan Anda! Kami akan merespons dalam 24-48 jam. Untuk keamanan, Anda mungkin perlu mengonfirmasi email Anda pada pengiriman pertama.');
-    form.reset();
+    if (data.success) {
+      showNotification('Pesan berhasil dikirim! Mohon cek email Anda untuk konfirmasi jika ini pertama kalinya.', 'success');
+      form.reset();
+      generateCaptcha();
+      setTimeout(() => {
+        showLanding();
+      }, 3000);
+    } else {
+      showNotification('Gagal mengirim pesan. Silakan coba lagi nanti.', 'error');
+      submitBtn.innerHTML = originalText;
+      submitBtn.disabled = false;
+    }
   })
   .catch(error => {
-    alert('Maaf, terjadi kesalahan saat mengirim pesan Anda. Silakan coba lagi nanti.');
     console.error('Error:', error);
+    showNotification('Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
+    submitBtn.innerHTML = originalText;
+    submitBtn.disabled = false;
   });
 }
 
