@@ -1608,6 +1608,7 @@ async function generatePrayer() {
     document.getElementById('loadingText').textContent = loadingMessages[msgIdx];
   }, 2200);
 
+  const ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_API_KEY_HERE'; // Replace with your actual API key
   const systemPrompt = `You are DoaJiwa — a sacred, compassionate AI that transforms human pain into personalised prayer through inner growth analysis.
 
 Your task:
@@ -1619,31 +1620,31 @@ Output FORMAT — use exactly:
 PRAYER_TITLE: [Poetic 5-8 word title]
 PRAYER: [Full prayer 150-250 words in the requested language, using God's names and imagery of that tradition, second person to God, raw and beautiful]
 PERSONAL_INSIGHT: [One compassionate sentence beginning with "Your inner self whispers..."]`;
-
   try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAxd_6sgHmR_9Y4s_wS1yfGBUVbhL8SZoI', {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: `${systemPrompt}\n\nThoughts: "${thoughts}"\nReligion: ${religionNames[religion]}\nLanguage: ${languageNames[language]}` }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 1000,
-        }
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: systemPrompt,
+        messages: [{ role: 'user', content: `Thoughts: "${thoughts}"\nReligion: ${religionNames[religion]}\nLanguage: ${languageNames[language]}` }]
       })
     });
-    
+
     if (!res.ok) {
-      const errorData = await res.json();
-      throw new Error(`API Error: ${res.status} - ${JSON.stringify(errorData)}`);
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`API Error ${res.status}: ${errorData.error?.message || 'Unknown error'}`);
     }
-    
+
     clearInterval(msgInt);
     const data = await res.json();
-    console.log('Gemini Response:', data);
-    
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-    
+    const raw = data.content?.[0]?.text || '';
+
     if (!raw) {
       throw new Error('No prayer generated. Please try again.');
     }
