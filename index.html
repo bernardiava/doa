@@ -1440,7 +1440,7 @@ function handleContactSubmit(e) {
   const message = document.getElementById('contactMessage').value.trim();
   
   // Get captcha from the correct ID for contact form
-  const captchaInput = document.getElementById('captchaContact').value.toUpperCase();
+  const captchaInput = document.getElementById('captchaInput').value.toUpperCase();
   
   if (!name || !email || !subject || !message) {
     showNotification('Mohon lengkapi semua kolom.', 'error');
@@ -1450,8 +1450,8 @@ function handleContactSubmit(e) {
   // Validate CAPTCHA
   if (captchaInput !== currentCaptchaCode) {
     showNotification('Kode verifikasi salah. Silakan coba lagi.', 'error');
-    generateCaptcha('captchaCanvasContact');
-    document.getElementById('captchaContact').value = '';
+    generateCaptcha();
+    document.getElementById('captchaInput').value = '';
     return;
   }
   
@@ -1463,7 +1463,7 @@ function handleContactSubmit(e) {
   
   showNotification('Aplikasi email Anda telah dibuka. Silakan kirim email dari aplikasi tersebut.', 'success');
   form.reset();
-  generateCaptcha('captchaCanvasContact');
+  generateCaptcha();
 }
 
 /* ════════════════════════════════════
