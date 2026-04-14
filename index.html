@@ -1666,7 +1666,16 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your inner self whisper
     clearInterval(msgInt);
     document.getElementById('loadingState').classList.remove('show');
     document.getElementById('idleState').style.display = 'flex';
-    alert('Something went wrong. Please try again.');
+    
+    let errorMsg = 'Something went wrong. Please try again.';
+    if (e.name === 'TypeError' && e.message.includes('fetch')) {
+      errorMsg = 'Connection error. Please check your internet connection and try again.';
+    } else if (e.message.includes('API')) {
+      errorMsg = 'Service temporarily unavailable. Please try again in a few moments.';
+    }
+    
+    alert(errorMsg);
+    console.error('Prayer generation error:', e);
   }
   document.getElementById('submitBtn').disabled = false;
 }
