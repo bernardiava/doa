@@ -1618,30 +1618,31 @@ Your task:
 Output FORMAT — use exactly:
 PRAYER_TITLE: [Poetic 5-8 word title]
 PRAYER: [Full prayer 150-250 words in the requested language, using God's names and imagery of that tradition, second person to God, raw and beautiful]
-SHADOW_NOTE: [One compassionate sentence beginning with "Your inner self whispers..."]`;
+PERSONAL_INSIGHT: [One compassionate sentence beginning with "Your inner self whispers..."]`;
 
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAxd_6sgHmR_9Y4s_wS1yfGBUVbhL8SZoI', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307', // Faster & cheaper model
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: `Thoughts: "${thoughts}"\nReligion: ${religionNames[religion]}\nLanguage: ${languageNames[language]}` }]
+        contents: [{ parts: [{ text: `${systemPrompt}\n\nThoughts: "${thoughts}"\nReligion: ${religionNames[religion]}\nLanguage: ${languageNames[language]}` }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
       })
     });
     clearInterval(msgInt);
     const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     const titleMatch = raw.match(/PRAYER_TITLE:\s*(.+)/);
-    const prayerMatch = raw.match(/PRAYER:\s*([\s\S]+?)(?=SHADOW_NOTE:|$)/);
-    const shadowMatch = raw.match(/SHADOW_NOTE:\s*(.+)/);
+    const prayerMatch = raw.match(/PRAYER:\s*([\s\S]+?)(?=PERSONAL_INSIGHT:|$)/);
+    const insightMatch = raw.match(/PERSONAL_INSIGHT:\s*(.+)/);
 
     const title = titleMatch ? titleMatch[1].trim() : 'A Prayer From Your Heart';
     const prayer = prayerMatch ? prayerMatch[1].trim() : raw;
-    const shadow = shadowMatch ? shadowMatch[1].trim() : '';
+    const insight = insightMatch ? insightMatch[1].trim() : '';
 
     currentPrayerText = prayer;
 
@@ -1649,13 +1650,13 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your inner self whisper
     document.getElementById('loadingState').classList.remove('show');
     document.getElementById('prayerTitle').textContent = title;
     document.getElementById('prayerText').textContent = prayer;
-    document.getElementById('shadowNote').textContent = shadow ? `✦ ${shadow}` : '';
+    document.getElementById('shadowNote').textContent = insight ? `✦ ${insight}` : '';
     document.getElementById('prayerOutput').classList.add('show');
 
     prayerCountSession++;
 
     // Save to profile if logged in, otherwise store as pending
-    const prayerData = { title, text: prayer, shadowNote: shadow, religion, language };
+    const prayerData = { title, text: prayer, shadowNote: insight, religion, language };
     if (currentUser) {
       DB.savePrayer(currentUser.id, prayerData);
     } else {
