@@ -1625,7 +1625,7 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your inner self whisper
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-3-haiku-20240307', // Faster & cheaper model
         max_tokens: 1000,
         system: systemPrompt,
         messages: [{ role: 'user', content: `Thoughts: "${thoughts}"\nReligion: ${religionNames[religion]}\nLanguage: ${languageNames[language]}` }]
