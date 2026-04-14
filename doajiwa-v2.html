@@ -1073,6 +1073,8 @@ let currentUser = null;
 let currentPrayerText = '';
 let selectedPlan = 'monthly';
 let prayerCountSession = 0;
+// Get API key from environment variable (Cloudflare) or use placeholder
+const ANTHROPIC_API_KEY = typeof process !== 'undefined' && process.env ? process.env.ANTHROPIC_API_KEY : 'YOUR_ANTHROPIC_API_KEY_HERE'; // Replace with your actual API key or set in .dev.vars / Cloudflare dashboard
 
 function initAuth() {
   const session = DB.getSession();
@@ -1377,7 +1379,11 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -1386,6 +1392,12 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
       })
     });
     clearInterval(msgInt);
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`API Error ${res.status}: ${errorData.error?.message || 'Unknown error'}`);
+    }
+    
     const data = await res.json();
     const raw = data.content?.[0]?.text || '';
 
@@ -1420,7 +1432,8 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
     clearInterval(msgInt);
     document.getElementById('loadingState').classList.remove('show');
     document.getElementById('idleState').style.display = 'flex';
-    alert('Something went wrong. Please try again.');
+    console.error('API Error:', e);
+    alert('Something went wrong. Please try again. (Error: ' + (e.message || 'Unknown') + ')');
   }
   document.getElementById('submitBtn').disabled = false;
 }

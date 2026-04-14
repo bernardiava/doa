@@ -1621,7 +1621,7 @@ PRAYER: [Full prayer 150-250 words in the requested language, using God's names 
 PERSONAL_INSIGHT: [One compassionate sentence beginning with "Your inner self whispers..."]`;
 
   try {
-    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyAxd_6sgHmR_9Y4s_wS1yfGBUVbhL8SZoI', {
+    const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyAxd_6sgHmR_9Y4s_wS1yfGBUVbhL8SZoI', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -1632,9 +1632,21 @@ PERSONAL_INSIGHT: [One compassionate sentence beginning with "Your inner self wh
         }
       })
     });
+    
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(`API Error: ${res.status} - ${JSON.stringify(errorData)}`);
+    }
+    
     clearInterval(msgInt);
     const data = await res.json();
+    console.log('Gemini Response:', data);
+    
     const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    
+    if (!raw) {
+      throw new Error('No prayer generated. Please try again.');
+    }
 
     const titleMatch = raw.match(/PRAYER_TITLE:\s*(.+)/);
     const prayerMatch = raw.match(/PRAYER:\s*([\s\S]+?)(?=PERSONAL_INSIGHT:|$)/);
