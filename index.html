@@ -918,48 +918,21 @@ footer { background: var(--ink); color: var(--parchment); padding: 3.5rem 5% 2re
   <h1 style="font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; color:var(--maroon); margin-bottom:0.5rem;">Contact Us</h1>
   <p style="font-size:0.85rem; color:rgba(28,18,9,0.5); margin-bottom:2.5rem;">We're here to listen and support your journey</p>
   
-  <div style="background:linear-gradient(135deg, var(--parchment), #EDE3CC); border:1px solid rgba(201,168,76,0.25); border-radius:1.5rem; padding:2.5rem;">
-    <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--maroon); margin-bottom:1.5rem; text-align:center;">Send Us a Message</h2>
-    <form onsubmit="handleContactSubmit(event)" style="display:flex; flex-direction:column; gap:1.2rem;">
-      <div>
-        <label style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); display:block; margin-bottom:0.4rem;">Your Name</label>
-        <input type="text" id="contactName" required style="width:100%; border:1px solid rgba(201,168,76,0.35); background:rgba(250,246,238,0.6); border-radius:0.8rem; padding:0.85rem 1.1rem; font-family:'Noto Serif',serif; font-size:0.9rem; color:var(--ink);" placeholder="Your full name">
-      </div>
-      <div>
-        <label style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); display:block; margin-bottom:0.4rem;">Email Address</label>
-        <input type="email" id="contactEmail" required style="width:100%; border:1px solid rgba(201,168,76,0.35); background:rgba(250,246,238,0.6); border-radius:0.8rem; padding:0.85rem 1.1rem; font-family:'Noto Serif',serif; font-size:0.9rem; color:var(--ink);" placeholder="your@email.com">
-      </div>
-      <div>
-        <label style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); display:block; margin-bottom:0.4rem;">Subject</label>
-        <select id="contactSubject" required style="width:100%; border:1px solid rgba(201,168,76,0.35); background:rgba(250,246,238,0.6); border-radius:0.8rem; padding:0.85rem 1.1rem; font-family:'Noto Serif',serif; font-size:0.9rem; color:var(--ink); appearance:none;">
-          <option value="">Select a topic</option>
-          <option value="support">Technical Support</option>
-          <option value="billing">Billing & Subscription</option>
-          <option value="feedback">Feedback & Suggestions</option>
-          <option value="privacy">Privacy Concerns</option>
-          <option value="partnership">Partnership Inquiry</option>
-          <option value="other">Other</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); display:block; margin-bottom:0.4rem;">Message</label>
-        <textarea id="contactMessage" required rows="5" style="width:100%; border:1px solid rgba(201,168,76,0.35); background:rgba(250,246,238,0.6); border-radius:0.8rem; padding:1rem 1.1rem; font-family:'Noto Serif',serif; font-size:0.9rem; color:var(--ink); resize:vertical;" placeholder="How can we help you?"></textarea>
-      </div>
-      
-      <!-- Human Verification -->
-      <div style="margin-top:0.5rem;">
-        <label style="font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); display:block; margin-bottom:0.8rem;">Human Verification</label>
-        <div id="captchaContainer" style="background:rgba(250,246,238,0.8); border:1px solid rgba(201,168,76,0.35); border-radius:0.8rem; padding:1.2rem; text-align:center;">
-          <canvas id="captchaCanvas" width="200" height="60" style="border:1px dashed rgba(201,168,76,0.5); border-radius:0.5rem; background:#fff; margin-bottom:0.8rem;"></canvas>
-          <input type="text" id="captchaInput" required style="width:100%; max-width:200px; border:1px solid rgba(201,168,76,0.35); background:rgba(250,246,238,0.6); border-radius:0.6rem; padding:0.7rem 1rem; font-family:'Noto Serif',serif; font-size:0.9rem; color:var(--ink); text-align:center; letter-spacing:0.3em; text-transform:uppercase;" placeholder="Enter the code above">
-          <button type="button" onclick="generateCaptcha()" style="margin-top:0.6rem; background:transparent; border:1px solid rgba(201,168,76,0.4); color:var(--gold-dim); padding:0.4rem 1rem; border-radius:0.5rem; cursor:pointer; font-size:0.75rem; font-family:'Noto Serif',serif;">↻ Refresh Code</button>
-        </div>
-      </div>
-      
-      <button type="submit" class="submit-btn" style="align-self:center; margin-top:1rem;">
-        <span>✦</span> Send Message
-      </button>
-    </form>
+  <div style="background:linear-gradient(135deg, var(--parchment), #EDE3CC); border:1px solid rgba(201,168,76,0.25); border-radius:1.5rem; padding:2.5rem; text-align:center;">
+    <h2 style="font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:var(--maroon); margin-bottom:1.5rem;">Get in Touch</h2>
+    
+    <p style="font-size:0.95rem; color:var(--ink); line-height:1.8; margin-bottom:2rem; max-width:600px; margin-left:auto; margin-right:auto;">
+      Have a question, concern, or simply want to share your experience? We'd love to hear from you. 
+      Click the button below to open your email app and send us a message directly.
+    </p>
+    
+    <a href="mailto:st.bernardv3@gmail.com" style="display:inline-block; background:linear-gradient(135deg, var(--maroon), #7A2A2A); color:white; padding:1rem 2.5rem; border-radius:2rem; text-decoration:none; font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; letter-spacing:0.05em; transition:all 0.3s ease; box-shadow:0 4px 15px rgba(92,28,28,0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(92,28,28,0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(92,28,28,0.3)';">
+      ✉ Send Email
+    </a>
+    
+    <p style="font-size:0.8rem; color:rgba(28,18,9,0.5); margin-top:1.5rem;">
+      Your email app will open automatically with our address ready.
+    </p>
   </div>
   
   <div style="margin-top:2.5rem; text-align:center; font-size:0.85rem; color:rgba(28,18,9,0.5);">
