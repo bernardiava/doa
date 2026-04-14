@@ -1074,7 +1074,7 @@ let currentPrayerText = '';
 let selectedPlan = 'monthly';
 let prayerCountSession = 0;
 // Get API key from environment variable (Cloudflare) or use placeholder
-const ANTHROPIC_API_KEY = typeof process !== 'undefined' && process.env ? process.env.ANTHROPIC_API_KEY : 'YOUR_ANTHROPIC_API_KEY_HERE'; // Replace with your actual API key or set in .dev.vars / Cloudflare dashboard
+const ANTHROPIC_API_KEY = typeof process !== 'undefined' && process.env ? process.env.ANTHROPIC_API_KEY : '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'; // Replace with your actual API key or set in .dev.vars / Cloudflare dashboard
 
 function initAuth() {
   const session = DB.getSession();
