@@ -1438,7 +1438,9 @@ function handleContactSubmit(e) {
   const email = document.getElementById('contactEmail').value.trim();
   const subject = document.getElementById('contactSubject').value;
   const message = document.getElementById('contactMessage').value.trim();
-  const captchaInput = document.getElementById('captchaInput').value.toUpperCase();
+  
+  // Get captcha from the correct ID for contact form
+  const captchaInput = document.getElementById('captchaContact').value.toUpperCase();
   
   if (!name || !email || !subject || !message) {
     showNotification('Mohon lengkapi semua kolom.', 'error');
@@ -1448,48 +1450,20 @@ function handleContactSubmit(e) {
   // Validate CAPTCHA
   if (captchaInput !== currentCaptchaCode) {
     showNotification('Kode verifikasi salah. Silakan coba lagi.', 'error');
-    generateCaptcha();
-    document.getElementById('captchaInput').value = '';
+    generateCaptcha('captchaCanvasContact');
+    document.getElementById('captchaContact').value = '';
     return;
   }
   
-  // Show loading state
-  const submitBtn = form.querySelector('button[type="submit"]');
-  const originalText = submitBtn.innerHTML;
-  submitBtn.innerHTML = '<span class="loading-spinner"></span> Mengirim...';
-  submitBtn.disabled = true;
+  // Create mailto link to open user's email client
+  const mailtoLink = `mailto:st.bernardv3@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(`Nama: ${name}\nEmail: ${email}\n\n${message}`)}`;
   
-  // Submit to FormSubmit.co (handles CAPTCHA and email delivery)
-  const formData = new FormData(form);
-  formData.append('_captcha', 'true');
-  formData.append('_next', window.location.href + '?status=success');
-  formData.append('_subject', 'New Contact Message: ' + subject);
+  // Open email client
+  window.location.href = mailtoLink;
   
-  fetch('https://formsubmit.co/ajax/st.bernardv3@gmail.com', {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success) {
-      showNotification('Pesan berhasil dikirim! Mohon cek email Anda untuk konfirmasi jika ini pertama kalinya.', 'success');
-      form.reset();
-      generateCaptcha();
-      setTimeout(() => {
-        showLanding();
-      }, 3000);
-    } else {
-      showNotification('Gagal mengirim pesan. Silakan coba lagi nanti.', 'error');
-      submitBtn.innerHTML = originalText;
-      submitBtn.disabled = false;
-    }
-  })
-  .catch(error => {
-    console.error('Error:', error);
-    showNotification('Terjadi kesalahan koneksi. Silakan coba lagi.', 'error');
-    submitBtn.innerHTML = originalText;
-    submitBtn.disabled = false;
-  });
+  showNotification('Aplikasi email Anda telah dibuka. Silakan kirim email dari aplikasi tersebut.', 'success');
+  form.reset();
+  generateCaptcha('captchaCanvasContact');
 }
 
 /* ════════════════════════════════════
