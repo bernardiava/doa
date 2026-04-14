@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Berhasil - Doa Jiwa</title>
+    <style>
+        :root {
+            --primary-gold: #D4AF37;
+            --secondary-gold: #C5A028;
+            --deep-maroon: #4A0E12;
+            --dark-bg: #1A0506;
+            --parchment: #F5EBD9;
+            --text-dark: #2C1810;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Georgia', serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg), var(--deep-maroon));
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .container {
+            background: var(--parchment);
+            border-radius: 15px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 2px solid var(--primary-gold);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-gold), var(--secondary-gold), var(--primary-gold));
+        }
+
+        .success-icon {
+            font-size: 80px;
+            color: var(--deep-maroon);
+            margin-bottom: 20px;
+            animation: scaleIn 0.6s ease-out;
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            color: var(--deep-maroon);
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: normal;
+            letter-spacing: 1px;
+        }
+
+        .message {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+
+        .order-details {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--primary-gold);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: left;
+        }
+
+        .order-details p {
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .order-details strong {
+            color: var(--deep-maroon);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: bold;
+        }
+
+        .btn-primary {
+            background: var(--deep-maroon);
+            color: var(--primary-gold);
+            border: 2px solid var(--deep-maroon);
+        }
+
+        .btn-primary:hover {
+            background: transparent;
+            color: var(--deep-maroon);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--deep-maroon);
+            border: 2px solid var(--deep-maroon);
+        }
+
+        .btn-secondary:hover {
+            background: var(--deep-maroon);
+            color: var(--primary-gold);
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            color: var(--deep-maroon);
+            font-style: italic;
+        }
+
+        .error-message {
+            display: none;
+            color: #c0392b;
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(192, 57, 43, 0.1);
+            border-radius: 5px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .btn-group {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-icon">✓</div>
+        <h1>Pembayaran Berhasil!</h1>
+        <p class="message">
+            Terima kasih telah menjadi bagian dari perjalanan spiritual Doa Jiwa. 
+            Akun Premium Anda telah diaktifkan. Selamat mendalami makna di balik setiap doa.
+        </p>
+
+        <div class="order-details" id="orderDetails">
+            <p><strong>ID Pesanan:</strong> <span id="orderId">Memuat...</span></p>
+            <p><strong>Status:</strong> <span style="color: green; font-weight: bold;">Lunas</span></p>
+            <p><strong>Paket:</strong> <span>Premium Doa Jiwa</span></p>
+            <p><strong>Tanggal:</strong> <span id="paymentDate">-</span></p>
+        </div>
+
+        <div class="loading" id="loadingMsg">Sedang memproses data pesanan...</div>
+        <div class="error-message" id="errorMsg"></div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn btn-primary">Kembali ke Beranda</a>
+            <a href="index.html#profileView" class="btn btn-secondary">Lihat Profil Saya</a>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk mendapatkan parameter dari URL
+        function getQueryParam(param) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Format tanggal
+        function formatDate(dateString) {
+            const options = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            };
+            return new Date().toLocaleDateString('id-ID', options);
+        }
+
+        // Aktivasi status premium di localStorage
+        function activatePremiumStatus(orderId) {
+            // Simpan status premium
+            localStorage.setItem('doaJiwaPremium', 'true');
+            localStorage.setItem('doaJiwaPremiumDate', new Date().toISOString());
+            localStorage.setItem('doaJiwaOrderId', orderId || 'manual_activation');
+            
+            // Jika ada user login, update juga di data user
+            const currentUser = localStorage.getItem('doaJiwaCurrentUser');
+            if (currentUser) {
+                const users = JSON.parse(localStorage.getItem('doaJiwaUsers') || '[]');
+                const userIndex = users.findIndex(u => u.email === currentUser);
+                
+                if (userIndex !== -1) {
+                    users[userIndex].isPremium = true;
+                    users[userIndex].premiumSince = new Date().toISOString();
+                    localStorage.setItem('doaJiwaUsers', JSON.stringify(users));
+                }
+            }
+        }
+
+        // Proses halaman saat dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            const loadingMsg = document.getElementById('loadingMsg');
+            const errorMsg = document.getElementById('errorMsg');
+            const orderIdSpan = document.getElementById('orderId');
+            const dateSpan = document.getElementById('paymentDate');
+            
+            // Tampilkan loading
+            loadingMsg.style.display = 'block';
+            
+            // Ambil order_id dari parameter URL (Mayar.id biasanya mengirim order_id atau transaction_id)
+            const orderId = getQueryParam('order_id') || getQueryParam('transaction_id') || getQueryParam('id');
+            
+            setTimeout(() => {
+                loadingMsg.style.display = 'none';
+                
+                if (orderId) {
+                    // Tampilkan order ID
+                    orderIdSpan.textContent = orderId;
+                    dateSpan.textContent = formatDate(new Date());
+                    
+                    // Aktifkan status premium
+                    activatePremiumStatus(orderId);
+                    
+                    // Opsional: Kirim konfirmasi ke server jika punya backend
+                    // fetch('/api/verify-payment?order_id=' + orderId) ...
+                } else {
+                    // Jika tidak ada order_id, tampilkan pesan umum
+                    orderIdSpan.textContent = "Tidak tersedia";
+                    dateSpan.textContent = formatDate(new Date());
+                    
+                    // Tetap aktifkan premium (untuk testing atau manual redirect)
+                    activatePremiumStatus('manual_redirect');
+                    
+                    errorMsg.textContent = "Catatan: Tidak dapat menemukan detail pesanan spesifik, namun akses Premium telah diaktifkan.";
+                    errorMsg.style.display = 'block';
+                }
+            }, 800); // Delay sedikit untuk efek visual
+        });
+    </script>
+</body>
+</html>
