@@ -634,8 +634,7 @@ footer { background: var(--ink); color: var(--parchment); padding: 3.5rem 5% 2re
           <div>
             <label class="field-label" for="thoughts">What is weighing on your heart right now?</label>
             <textarea id="thoughts" class="thoughts-area"
-              placeholder="Write freely... your fears, anger, grief, confusion, shame. This space holds it all without judgment."
-              oninput="checkCrisis(this.value)"></textarea>
+              placeholder="Write freely... your fears, anger, grief, confusion, shame. This space holds it all without judgment."></textarea>
           </div>
           <div class="crisis-banner" id="crisisBanner">
             <h4>💙 You Are Not Alone in This</h4>
@@ -1051,6 +1050,19 @@ const DB = {
     if (users[email]) { users[email].plan = plan; localStorage.setItem('dj_users', JSON.stringify(users)); }
     const session = DB.getSession();
     if (session && session.email === email) { session.plan = plan; DB.setSession(session); }
+  },
+  // Save thoughts to database (quietly recorded)
+  saveThoughts(userId, thoughts) {
+    const key = `dj_thoughts_${userId}`;
+    const list = JSON.parse(localStorage.getItem(key) || '[]');
+    const entry = { id: Date.now().toString(), ...thoughts, createdAt: new Date().toISOString() };
+    list.unshift(entry); // newest first
+    localStorage.setItem(key, JSON.stringify(list));
+    return entry;
+  },
+  // Get thoughts from database
+  getThoughts(userId) {
+    return JSON.parse(localStorage.getItem(`dj_thoughts_${userId}`) || '[]');
   }
 };
 
@@ -1061,6 +1073,8 @@ let currentUser = null;
 let currentPrayerText = '';
 let selectedPlan = 'monthly';
 let prayerCountSession = 0;
+// Get API key from environment variable (Cloudflare) or use placeholder
+const ANTHROPIC_API_KEY = typeof process !== 'undefined' && process.env ? process.env.ANTHROPIC_API_KEY : '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'; // Replace with your actual API key or set in .dev.vars / Cloudflare dashboard
 
 function initAuth() {
   const session = DB.getSession();
@@ -1296,10 +1310,7 @@ function switchTab(tab) {
    PRAYER GENERATOR
 ════════════════════════════════════ */
 const crisisKeywords = ['kill myself','end my life','want to die','suicide','suicidal','self harm','self-harm','cutting myself','hurt myself','no reason to live','better off dead','bunuh diri','mau mati','pengen mati','tidak mau hidup','ingin mati','menyakiti diri'];
-function checkCrisis(text) {
-  const found = crisisKeywords.some(kw => text.toLowerCase().includes(kw));
-  document.getElementById('crisisBanner').classList.toggle('show', found);
-}
+// checkCrisis function removed - crisis detection now happens in generatePrayer()
 
 const loadingMessages = ['Listening to your heart...','Reading the shadows beneath your words...','Weaving your prayer in your faith...','Speaking your truth to the divine...','Almost ready for you...'];
 const religionNames = { islam:'Islam',kristen:'Kristen Protestan',katolik:'Katolik',hindu:'Hindu',buddha:'Buddha',konghucu:'Konghucu',judaism:'Judaism',sikhism:'Sikhism',taoism:'Taoism',shinto:'Shinto',spiritual:'Spiritual/Universal',pagan:'Earth-Based/Pagan' };
@@ -1319,9 +1330,31 @@ async function generatePrayer() {
   if (!currentUser && prayerCountSession >= 1) { openModal('signupModal'); return; }
   if (currentUser && currentUser.plan === 'free' && prayerCountSession >= 1) { openModal('paywallModal'); return; }
 
+  // Check for crisis keywords and show hotline if needed
+  const hasCrisisKeywords = crisisKeywords.some(kw => thoughts.toLowerCase().includes(kw));
+  
+  // Save thoughts to database (quietly, before processing)
+  const thoughtsData = { 
+    text: thoughts, 
+    religion, 
+    language, 
+    hasCrisisKeywords,
+    timestamp: new Date().toISOString() 
+  };
+  if (currentUser) {
+    DB.saveThoughts(currentUser.id, thoughtsData);
+  } else {
+    // Store temporarily for guest users
+    localStorage.setItem('dj_pending_thoughts', JSON.stringify(thoughtsData));
+  }
+
   // Show loading
   document.getElementById('idleState').style.display = 'none';
   document.getElementById('prayerOutput').classList.remove('show');
+  
+  // Show crisis banner if crisis keywords detected
+  document.getElementById('crisisBanner').classList.toggle('show', hasCrisisKeywords);
+  
   document.getElementById('loadingState').classList.add('show');
   document.getElementById('submitBtn').disabled = true;
 
@@ -1346,7 +1379,11 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
@@ -1355,6 +1392,12 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
       })
     });
     clearInterval(msgInt);
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(`API Error ${res.status}: ${errorData.error?.message || 'Unknown error'}`);
+    }
+    
     const data = await res.json();
     const raw = data.content?.[0]?.text || '';
 
@@ -1389,7 +1432,8 @@ SHADOW_NOTE: [One compassionate sentence beginning with "Your shadow whispers...
     clearInterval(msgInt);
     document.getElementById('loadingState').classList.remove('show');
     document.getElementById('idleState').style.display = 'flex';
-    alert('Something went wrong. Please try again.');
+    console.error('API Error:', e);
+    alert('Something went wrong. Please try again. (Error: ' + (e.message || 'Unknown') + ')');
   }
   document.getElementById('submitBtn').disabled = false;
 }
@@ -1398,6 +1442,12 @@ function savePendingPrayer() {
   if (pendingPrayer && currentUser) {
     DB.savePrayer(currentUser.id, pendingPrayer);
     pendingPrayer = null;
+  }
+  // Also save any pending thoughts from guest session
+  const pendingThoughts = JSON.parse(localStorage.getItem('dj_pending_thoughts') || 'null');
+  if (pendingThoughts && currentUser) {
+    DB.saveThoughts(currentUser.id, pendingThoughts);
+    localStorage.removeItem('dj_pending_thoughts');
   }
 }
 
